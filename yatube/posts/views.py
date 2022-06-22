@@ -13,7 +13,6 @@ def index(request):
     posts = Post.objects.select_related('author', 'group')
     context = {
         'page_obj': get_page_obj(request, posts),
-        'group_link': True,
     }
     return render(request, template, context)
 
@@ -41,8 +40,6 @@ def profile(request, username):
     context = {
         'author': author,
         'page_obj': get_page_obj(request, posts),
-        'is_profile': True,
-        'group_link': True,
         'following': following,
     }
     return render(request, template, context)
@@ -116,10 +113,8 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    if request.user != author and (
-            not request.user.follower.filter(author=author).exists()
-    ):
-        Follow.objects.create(
+    if request.user != author:
+        Follow.objects.get_or_create(
             user=request.user,
             author=author,
         )

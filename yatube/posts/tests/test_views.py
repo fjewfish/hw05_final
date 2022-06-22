@@ -1,7 +1,6 @@
 import shutil
 import tempfile
 
-from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -9,12 +8,8 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django import forms
 
-from yatube.settings import POSTS_PER_PAGE
-
-from ..models import Group, Post, Follow
+from ..models import Group, Post, Follow, User
 from ..forms import PostForm
-
-User = get_user_model()
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -28,7 +23,7 @@ class PostPagesTests(TestCase):
         cls.group_slug = 'test-slug'
         cls.another_username = 'another-username'
         cls.another_group_slug = 'another-slug'
-        cls.posts_num_test_user = POSTS_PER_PAGE + 3
+        cls.posts_num_test_user = settings.POSTS_PER_PAGE + 3
         cls.posts_quantity = cls.posts_num_test_user + 1
         cls.index_url = reverse('posts:index')
         cls.post_create_url = reverse('posts:post_create')
@@ -181,8 +176,8 @@ class PostPagesTests(TestCase):
     def _page_paginator(self, url: str, posts_count: int) -> None:
         """Метод для проверки паджинатора на первой и второй странице."""
         posts_at_page = {
-            1: POSTS_PER_PAGE,
-            2: posts_count - POSTS_PER_PAGE
+            1: settings.POSTS_PER_PAGE,
+            2: posts_count - settings.POSTS_PER_PAGE
         }
         for page, posts in posts_at_page.items():
             with self.subTest(url=url, page=page, posts=posts):

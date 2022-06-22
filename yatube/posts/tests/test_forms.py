@@ -1,15 +1,12 @@
 import shutil
 import tempfile
 
-from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from ..models import Post, Group, Comment
-
-User = get_user_model()
+from ..models import Post, Group, Comment, User
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -81,16 +78,13 @@ class PostFormTest(TestCase):
             data=form_data,
             follow=True,
         )
+        post = Post.objects.latest('pub_date')
         self.assertRedirects(response, self.profile_url)
         self.assertEqual(Post.objects.count(), posts_count + 1)
-        self.assertTrue(
-            Post.objects.filter(
-                id=Post.objects.first().id,
-                text=form_data['text'],
-                group=self.group.id,
-                image='posts/small.gif',
-            ).exists()
-        )
+        self.assertEqual(post.id, Post.objects.first().id)
+        self.assertEqual(post.text, form_data['text'])
+        self.assertEqual(post.group, self.group)
+        self.assertEqual(post.image, 'posts/small.gif')
 
     def test_edit_post(self):
         """Валидная форма редактирует запись в в БД."""
@@ -121,7 +115,7 @@ class PostFormTest(TestCase):
         self.assertEqual(post.image, 'posts/small_edit.gif')
 
     def test_authorized_user_can_comment(self):
-        """Комментировать посты может только авторизованный пользователь."""
+        """Авторизованный пользователь может комментировать посты."""
         comments_count = Comment.objects.count()
         form_data = {
             'text': 'Тестовый коммент',
@@ -137,9 +131,15 @@ class PostFormTest(TestCase):
         self.assertEqual(comment.text, form_data['text'])
         self.assertEqual(comment.post, self.post)
         self.assertEqual(comment.author, self.user)
-        response = self.guest_client.post(
+
+    def test_guest_user_can_not_comment(self):
+        comments_count = Comment.objects.count()
+        form_data = {
+            'text': 'Тестовый коммент',
+        }
+        self.guest_client.post(
             self.post_add_comment_url,
             data=form_data,
             follow=True,
         )
-        self.assertEqual(comments_count + 1, self.post.comments.count())
+        self.assertEqual(comments_count, self.post.comments.count())

@@ -1,11 +1,7 @@
-from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.conf import settings
 
-from ..models import Group, Post
-
-from yatube.settings import MODEL_STR_METHOD_LENGHT
-
-User = get_user_model()
+from ..models import Group, Post, User
 
 
 class PostModelTest(TestCase):
@@ -20,15 +16,21 @@ class PostModelTest(TestCase):
         )
         cls.post = Post.objects.create(
             author=cls.user,
-            text='Тестовая пост',
+            text='Т' * settings.MODEL_STR_METHOD_LENGHT * 2,
         )
 
     def test_models_have_correct_object_names(self):
         """Проверяем, что у моделей корректно работает __str__."""
         group = PostModelTest.group
-        self.assertEqual(group.title[:MODEL_STR_METHOD_LENGHT], str(group))
+        self.assertEqual(
+            group.title[:settings.MODEL_STR_METHOD_LENGHT],
+            str(group)
+        )
         post = PostModelTest.post
-        self.assertEqual(post.text[:MODEL_STR_METHOD_LENGHT], str(post))
+        self.assertEqual(
+            post.text[:settings.MODEL_STR_METHOD_LENGHT],
+            str(post)
+        )
 
     def test_verbose_name(self):
         """verbose_name в полях совпадает с ожидаемым."""

@@ -1,13 +1,10 @@
-from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
 
 from http import HTTPStatus
 
-from ..models import Group, Post
-
-User = get_user_model()
+from ..models import Group, Post, User
 
 
 class PostURLTests(TestCase):
@@ -35,6 +32,13 @@ class PostURLTests(TestCase):
         cls.not_allowed_edit_url = reverse(
             'posts:edit', kwargs={'post_id': '2'}
         )
+        cls.profile_follow_url = reverse(
+            'posts:profile_follow', kwargs={'username': cls.username}
+        )
+        cls.profile_unfollow_url = reverse(
+            'posts:profile_unfollow', kwargs={'username': cls.username}
+        )
+        cls.follow_index_url = reverse('posts:follow_index')
         cls.post_create_url = reverse('posts:post_create')
         cls.edit_redirect = '/auth/login/?next=/posts/1/edit/'
         cls.create_redirect = '/auth/login/?next=/create/'
@@ -84,19 +88,25 @@ class PostURLTests(TestCase):
             (self.post_create_url, self.guest_client, HTTPStatus.FOUND),
             (self.not_allowed_edit_url, self.authorized_client,
              HTTPStatus.FOUND),
+            (self.follow_index_url, self.authorized_client, HTTPStatus.OK),
+            (self.follow_index_url, self.guest_client, HTTPStatus.FOUND),
         )
         for url, client, status in private_url:
             with self.subTest(url=url, client=client, status=status):
                 response = client.get(url)
                 self.assertEqual(response.status_code, status)
 
-    def test_edit_create_url_redirect(self):
+    def test_urls_redirect(self):
         """Корректно работают перенаправления в приложении posts."""
         redirect_urls = (
             (self.post_edit_url, self.guest_client, self.edit_redirect),
             (self.post_create_url, self.guest_client, self.create_redirect),
             (self.not_allowed_edit_url, self.authorized_client,
              self.another_user_post),
+            (self.profile_follow_url, self.authorized_client,
+             self.profile_url),
+            (self.profile_unfollow_url, self.authorized_client,
+             self.profile_url),
         )
         for url, client, redirect in redirect_urls:
             with self.subTest(url=url, client=client, redirect=redirect):
@@ -111,7 +121,8 @@ class PostURLTests(TestCase):
             self.profile_url: 'posts/profile.html',
             self.post_detail_url: 'posts/post_detail.html',
             self.post_edit_url: 'posts/create_post.html',
-            self.post_create_url: 'posts/create_post.html'
+            self.post_create_url: 'posts/create_post.html',
+            self.follow_index_url: 'posts/follow.html',
         }
         for url, template in templates_url_names.items():
             with self.subTest(url=url):

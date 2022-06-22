@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% block title %}
-	Ваша лента с подписками
+  Ваша лента с подписками
 {% endblock %}
 {% block content %}
-	{% include 'posts/includes/switcher.html' %}
-	<h1>Ваша лента с подписками</h1>
-	{% for post in page_obj %}
-		{% include 'posts/includes/post.html' %}
-		{% if not forloop.last %}
-			<hr>{% endif %}
-	{% endfor %}
-	{% include 'posts/includes/paginator.html' %}
+  {% include 'posts/includes/switcher.html' with follow=True %}
+  <h1>Ваша лента с подписками</h1>
+  {% for post in page_obj %}
+    {% include 'posts/includes/post.html' %}
+    {% if not forloop.last %}
+      <hr>{% endif %}
+  {% endfor %}
+  {% include 'posts/includes/paginator.html' %}
 {% endblock %}
