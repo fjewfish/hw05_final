@@ -40,8 +40,10 @@ class PostURLTests(TestCase):
         )
         cls.follow_index_url = reverse('posts:follow_index')
         cls.post_create_url = reverse('posts:post_create')
+        cls.group_create_url = reverse('posts:group_create')
         cls.edit_redirect = '/auth/login/?next=/posts/1/edit/'
         cls.create_redirect = '/auth/login/?next=/create/'
+        cls.create_group_redirect = '/auth/login/?next=/create_group/'
         cls.not_found_404_url = '/unexisting_page/'
         cls.user = User.objects.create_user(username=cls.username)
         cls.group = Group.objects.create(
@@ -86,6 +88,8 @@ class PostURLTests(TestCase):
             (self.post_edit_url, self.guest_client, HTTPStatus.FOUND),
             (self.post_create_url, self.authorized_client, HTTPStatus.OK),
             (self.post_create_url, self.guest_client, HTTPStatus.FOUND),
+            (self.group_create_url, self.authorized_client, HTTPStatus.OK),
+            (self.group_create_url, self.guest_client, HTTPStatus.FOUND),
             (self.not_allowed_edit_url, self.authorized_client,
              HTTPStatus.FOUND),
             (self.follow_index_url, self.authorized_client, HTTPStatus.OK),
@@ -101,6 +105,8 @@ class PostURLTests(TestCase):
         redirect_urls = (
             (self.post_edit_url, self.guest_client, self.edit_redirect),
             (self.post_create_url, self.guest_client, self.create_redirect),
+            (self.group_create_url, self.guest_client,
+             self.create_group_redirect),
             (self.not_allowed_edit_url, self.authorized_client,
              self.another_user_post),
             (self.profile_follow_url, self.authorized_client,
@@ -123,6 +129,7 @@ class PostURLTests(TestCase):
             self.post_edit_url: 'posts/create_post.html',
             self.post_create_url: 'posts/create_post.html',
             self.follow_index_url: 'posts/follow.html',
+            self.group_create_url: 'posts/create_group.html',
         }
         for url, template in templates_url_names.items():
             with self.subTest(url=url):

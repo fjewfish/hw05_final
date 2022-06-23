@@ -15,4 +15,6 @@ handler404 = 'core.views.page_not_found'
 handler500 = 'core.views.internal_server_error'
 
 if settings.DEBUG:
-    urlpatterns += path('__debug__/', include('debug_toolbar.urls')),
+    import debug_toolbar
+
+    urlpatterns += path('__debug__/', include(debug_toolbar.urls)),

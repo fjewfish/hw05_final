@@ -18,6 +18,7 @@ class PostFormTest(TestCase):
         super().setUpClass()
         cls.username = 'test-username'
         cls.post_create_url = reverse('posts:post_create')
+        cls.group_create_url = reverse('posts:group_create')
         cls.profile_url = reverse(
             'posts:profile', kwargs={'username': cls.username}
         )
@@ -59,6 +60,30 @@ class PostFormTest(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+
+    def test_create_group(self):
+        """Валидная форма создает новую группу."""
+        group_count = Group.objects.count()
+        form_data = {
+            'title': 'Новая группа',
+            'slug': 'new_group',
+            'description': 'Создали новую группу для теста',
+        }
+        response = self.authorized_client.post(
+            self.group_create_url,
+            data=form_data,
+            follow=True,
+        )
+        group = Group.objects.latest('pub_date')
+        self.assertRedirects(
+            response, reverse(
+                'posts:group_list', kwargs={'slug': form_data['slug']}
+            )
+        )
+        self.assertEqual(Group.objects.count(), group_count + 1)
+        self.assertEqual(group.title, form_data['title'])
+        self.assertEqual(group.slug, form_data['slug'])
+        self.assertEqual(group.description, form_data['description'])
 
     def test_create_post(self):
         """Валидная форма создает запись в БД."""

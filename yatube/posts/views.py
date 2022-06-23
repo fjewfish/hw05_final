@@ -4,7 +4,7 @@ from django.views.decorators.cache import cache_page
 
 from .utils import get_page_obj
 from .models import Post, Group, User, Follow
-from .forms import PostForm, CommentForm
+from .forms import PostForm, CommentForm, GroupForm
 
 
 @cache_page(20, key_prefix='index_page')
@@ -56,6 +56,15 @@ def post_detail(request, post_id):
         'comments': comments,
     }
     return render(request, template, context)
+
+
+@login_required
+def group_create(request):
+    form = GroupForm(request.POST or None)
+    if form.is_valid():
+        form = form.save()
+        return redirect('posts:group_list', slug=form.slug)
+    return render(request, 'posts/create_group.html', {'form': form})
 
 
 @login_required

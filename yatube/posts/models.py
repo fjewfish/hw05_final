@@ -9,10 +9,21 @@ from yatube.settings import MODEL_STR_METHOD_LENGHT
 User = get_user_model()
 
 
-class Group(models.Model):
-    title = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
-    description = models.TextField()
+class Group(CreatedModel):
+    title = models.CharField(
+        max_length=200,
+        verbose_name='Название',
+        help_text='Название новой группы',
+    )
+    slug = models.SlugField(
+        unique=True,
+        verbose_name='Слаг',
+        help_text='Слаг для url',
+    )
+    description = models.TextField(
+        verbose_name='Описание',
+        help_text='Описание новой группы',
+    )
 
     def __str__(self):
         return self.title[:MODEL_STR_METHOD_LENGHT]
